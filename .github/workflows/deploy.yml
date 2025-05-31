@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages (fast-edh)
+
+on:
+  push:
+    branches:
+      - main # Or your default branch, e.g., master
+  workflow_dispatch: # Allows manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Or your preferred Node.js LTS version
+          # No cache setting here, pnpm/action-setup handles caching
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4 # Updated to v4
+        with:
+          version: 10 # Specify your pnpm version or let it use latest
+          run_install: false # We will run install in the next step
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile # Recommended for CI
+
+      - name: Build application
+        run: pnpm run build
+        env:
+          NODE_ENV: production # Explicitly set NODE_ENV for the build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build # This should match adapter-static 'pages' config
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
