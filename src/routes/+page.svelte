@@ -56,7 +56,13 @@
 				})
 		)
 	);
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
+
+	let isWider = $derived(innerWidth > innerHeight);
 </script>
+
+<svelte:window bind:innerWidth bind:innerHeight />
 
 <div class="fixed top-1/2 left-1/2 z-10 -translate-1/2">
 	<label class="text-white" for="player-select">Players: </label>
@@ -68,21 +74,19 @@
 	</select>
 </div>
 
-<div class="h-svh w-screen bg-black">
-	<div class="grid h-full w-full grid-cols-6 grid-rows-6">
-		{#each players as player (player.id)}
-			<div style="grid-area: {player.gridArea};">
-				<PlayerTile
-					{player}
-					rotation={player.rotation}
-					onIncrement={() => {
-						player.life += 1;
-					}}
-					onDecrement={() => {
-						player.life -= 1;
-					}}
-				/>
-			</div>
-		{/each}
-	</div>
+<div class={['grid h-svh w-screen grid-cols-6 grid-rows-6 bg-black', !isWider && 'rotate-90']}>
+	{#each players as player (player.id)}
+		<div style="grid-area: {player.gridArea};">
+			<PlayerTile
+				{player}
+				rotation={player.rotation}
+				onIncrement={() => {
+					player.life += 1;
+				}}
+				onDecrement={() => {
+					player.life -= 1;
+				}}
+			/>
+		</div>
+	{/each}
 </div>
