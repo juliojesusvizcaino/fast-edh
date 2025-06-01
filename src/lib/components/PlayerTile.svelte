@@ -3,6 +3,7 @@
 	import { tick } from 'svelte';
 	import Counter from './Counter.svelte';
 	import { press } from '$lib/click.svelte';
+	import { fly } from 'svelte/transition';
 
 	let {
 		player,
@@ -16,12 +17,15 @@
 		onTimerClick: () => void;
 	} = $props();
 
+	let currentLife = $derived(player.life);
 	let isEditing = $state(false);
 	let inputValue = $state(player.life);
 	let inputElement: HTMLInputElement | null = $state(null);
 	let timeFraction = $derived(
 		Math.min((1 - player.timer.timeSeconds / player.timer.initialTimeSeconds) * 100, 100)
 	);
+
+	let lifeChange = $state<number | null>(null);
 
 	async function startEditing() {
 		isEditing = true;
@@ -39,6 +43,21 @@
 		player.life = inputValue;
 		inputValue = inputValue; // Keep inputValue in sync
 		isEditing = false;
+	}
+
+	let timeout: ReturnType<typeof setTimeout> | undefined = $state();
+
+	function handleLifeChange(quantity: number) {
+		clearTimeout(timeout);
+
+		currentLife += quantity;
+
+		lifeChange = currentLife - player.life;
+
+		timeout = setTimeout(() => {
+			onLifeChange(currentLife);
+			lifeChange = null;
+		}, 2000);
 	}
 </script>
 
@@ -67,8 +86,16 @@
 		})}
 	>
 		<span class="invisible" aria-hidden="true">
-			{(isEditing ? inputValue : player.life) || 0}
+			{(isEditing ? inputValue : currentLife) || 0}
 		</span>
+		{#if lifeChange !== null}
+			<div
+				class="absolute -top-4 left-1/2 -translate-x-1/2 text-sm opacity-50"
+				transition:fly={{ y: 20 }}
+			>
+				{lifeChange.toLocaleString('en', { signDisplay: 'exceptZero' })}
+			</div>
+		{/if}
 		{#if isEditing}
 			<input
 				bind:this={inputElement}
@@ -88,7 +115,7 @@
 				aria-label="Edit life total"
 			/>
 		{:else}
-			<Counter value={player.life.toString()} />
+			<Counter value={currentLife.toString()} />
 		{/if}
 	</button>
 
@@ -118,8 +145,8 @@
 			class="flex h-full w-1/2 items-center justify-center rounded-l-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-red-500/5"
 			aria-label="Decrease life for {player.name}"
 			{@attach press({
-				click: () => onLifeChange(-1),
-				longpress: () => onLifeChange(-10)
+				click: () => handleLifeChange(-1),
+				longpress: () => handleLifeChange(-10)
 			})}
 		>
 			-
@@ -128,8 +155,8 @@
 			class="flex h-full w-1/2 items-center justify-center rounded-r-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-green-500/5"
 			aria-label="Increase life for {player.name}"
 			{@attach press({
-				click: () => onLifeChange(1),
-				longpress: () => onLifeChange(10)
+				click: () => handleLifeChange(1),
+				longpress: () => handleLifeChange(10)
 			})}
 		>
 			+
