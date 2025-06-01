@@ -104,7 +104,6 @@ export class LocalStorageStore<T> {
   value: T;
 
   constructor(key: string, initialValue: T) {
-    console.log('building local storage', key, initialValue)
     const getStoredValue = () => {
       const storedValue = localStorage.getItem(key);
       if (storedValue) {

@@ -132,11 +132,8 @@
 			<PlayerTile
 				{player}
 				rotation={player.rotation}
-				onIncrement={() => {
-					player.life += 1;
-				}}
-				onDecrement={() => {
-					player.life -= 1;
+				onLifeChange={(quantity) => {
+					player.life = player.life + quantity;
 				}}
 				onTimerClick={() => {
 					for (const p of players) {

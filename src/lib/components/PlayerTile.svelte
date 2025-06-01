@@ -2,25 +2,26 @@
 	import { type Player } from '$lib/player.svelte';
 	import { tick } from 'svelte';
 	import Counter from './Counter.svelte';
+	import { press } from '$lib/click.svelte';
 
 	let {
 		player,
 		rotation,
-		onDecrement,
-		onIncrement,
+		onLifeChange,
 		onTimerClick
 	}: {
 		player: Player;
 		rotation: 0 | 90 | 180 | 270;
-		onDecrement: () => void;
-		onIncrement: () => void;
+		onLifeChange: (quantity: number) => void;
 		onTimerClick: () => void;
 	} = $props();
 
 	let isEditing = $state(false);
 	let inputValue = $state(player.life);
 	let inputElement: HTMLInputElement | null = $state(null);
-  let timeFraction = $derived(Math.min((1 - player.timer.timeSeconds / player.timer.initialTimeSeconds) * 100, 100))
+	let timeFraction = $derived(
+		Math.min((1 - player.timer.timeSeconds / player.timer.initialTimeSeconds) * 100, 100)
+	);
 
 	async function startEditing() {
 		isEditing = true;
@@ -57,8 +58,13 @@
 
 	<button
 		class="absolute top-1/2 left-1/2 z-10 flex -translate-1/2 items-center font-mono text-[clamp(1rem,8vh,6rem)] font-black"
-		onclick={() => (!isEditing ? startEditing() : undefined)}
-		onfocus={!isEditing ? startEditing : undefined}
+		{@attach press({
+			longpress: () => {
+				if (!isEditing) {
+					startEditing();
+				}
+			}
+		})}
 	>
 		<span class="invisible" aria-hidden="true">
 			{(isEditing ? inputValue : player.life) || 0}
@@ -102,23 +108,29 @@
 	</button>
 
 	<div
-		class="pointer-events-none absolute bottom-0 left-0 w-full transition-all duration-500 ease-in-out opacity-50"
+		class="pointer-events-none absolute bottom-0 left-0 w-full opacity-50 transition-all duration-500 ease-in-out"
 		style:height={`${timeFraction}%`}
-    style:background-color={`color-mix(in oklch, var(--color-neutral-700) ${100 - timeFraction}%, var(--color-amber-700) ${timeFraction}%)`}
+		style:background-color={`color-mix(in oklch, var(--color-neutral-700) ${100 - timeFraction}%, var(--color-amber-700) ${timeFraction}%)`}
 	></div>
 
 	<div class="absolute inset-0 flex">
 		<button
-			onclick={onDecrement}
-			class="flex h-full w-1/2 items-center justify-center rounded-l-3xl text-4xl font-black text-white/10 transition-colors duration-200 active:bg-red-500/5"
+			class="flex h-full w-1/2 items-center justify-center rounded-l-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-red-500/5"
 			aria-label="Decrease life for {player.name}"
+			{@attach press({
+				click: () => onLifeChange(-1),
+				longpress: () => onLifeChange(-10)
+			})}
 		>
 			-
 		</button>
 		<button
-			onclick={onIncrement}
-			class="flex h-full w-1/2 items-center justify-center rounded-r-3xl text-4xl font-black text-white/10 transition-colors duration-200 active:bg-green-500/5"
+			class="flex h-full w-1/2 items-center justify-center rounded-r-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-green-500/5"
 			aria-label="Increase life for {player.name}"
+			{@attach press({
+				click: () => onLifeChange(1),
+				longpress: () => onLifeChange(10)
+			})}
 		>
 			+
 		</button>
