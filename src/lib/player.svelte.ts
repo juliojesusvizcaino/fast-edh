@@ -34,9 +34,11 @@ export class Timer {
   #timeSeconds: LocalStorageStore<number>;
   #interval: ReturnType<typeof setInterval> | undefined;
   #initialTime: number;
+  #step: number;
 
-  constructor(params: { id: number; initialTime?: number }) {
+  constructor(params: { id: number | string; initialTime?: number; step?: number }) {
     this.#initialTime = params.initialTime ?? DEFAULT_TIME_SECONDS;
+    this.#step = params.step ?? -1;
 
     // --- State ---
     // Create reactive state using runes at the top level of the function.
@@ -60,11 +62,7 @@ export class Timer {
 
     this.#isPaused = false;
     this.#interval = setInterval(() => {
-      if (this.#timeSeconds.value > 0) {
-        this.#timeSeconds.value--; // This works because `timeSeconds` is a signal
-      } else {
-        this.pause();
-      }
+        this.#timeSeconds.value = this.#timeSeconds.value + this.#step;
     }, 1000);
   };
 

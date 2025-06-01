@@ -88,7 +88,7 @@
 
 		<button
 			onclick={onTimerClick}
-			class="z-10 mt-auto cursor-pointer rounded-lg bg-neutral-800 p-4">{player.timer.formatted}</button
+			class={["z-10 mt-auto cursor-pointer rounded-lg p-4", player.timer.isPaused ? 'bg-neutral-800' : 'bg-neutral-600' ]}>{player.timer.formatted}</button
 		>
 
 		<div class="absolute inset-0 z-0 flex">

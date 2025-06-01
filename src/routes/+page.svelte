@@ -1,6 +1,9 @@
 <script lang="ts">
+	import Counter from '$lib/components/Counter.svelte';
 	import PlayerTile from '$lib/components/PlayerTile.svelte';
-	import { Player } from '$lib/player.svelte';
+	import { Player, Timer } from '$lib/player.svelte';
+	import { Dialog } from 'bits-ui';
+	import { ArrowsCounterClockwise, Pause, Play } from 'phosphor-svelte';
 
 	const layouts = {
 		2: {
@@ -57,6 +60,7 @@
 				})
 		)
 	);
+	let globalTimer = new Timer({ id: 'global', initialTime: 0, step: 1 });
 </script>
 
 <div class="fixed top-1/2 left-1/2 z-10 flex -translate-1/2 flex-col gap-2">
@@ -67,35 +71,52 @@
 				player.life = 40;
 				player.timer.reset();
 			}
+      globalTimer.reset();
 		}}
 	>
-		<!-- Restart -->
-		<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="size-8" viewBox="0 0 16 16">
-			<path
-				fill-rule="evenodd"
-				d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"
-			/>
-			<path
-				d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"
-			/>
-		</svg>
+		<ArrowsCounterClockwise size="32" />
 	</button>
-	<button
-		class="cursor-pointer rounded-full bg-neutral-800 p-2 text-white"
-		onclick={() => {
-			for (const player of players) {
-				player.life = 40;
-				player.timer.pause();
+
+	<Dialog.Root
+		onOpenChange={(open) => {
+			if (open) {
+				for (const player of players) {
+					player.timer.pause();
+				}
+				globalTimer.start();
+			} else {
+				globalTimer.pause();
 			}
 		}}
 	>
-		<!-- Pause -->
-		<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="size-8" viewBox="0 0 16 16">
-			<path
-				d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"
+		<Dialog.Trigger
+			class="cursor-pointer items-center justify-center rounded-full bg-neutral-800 p-2 text-white"
+		>
+			<Pause size={32} />
+		</Dialog.Trigger>
+		<Dialog.Portal>
+			<Dialog.Overlay
+				class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"
 			/>
-		</svg>
-	</button>
+			<Dialog.Content
+				class="shadow-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-2 rounded-2xl bg-neutral-700 px-16 py-8 text-white outline-hidden"
+			>
+				<div class="relative flex flex-col items-center justify-center font-mono">
+					<span class="invisible" aria-hidden="true">
+						{globalTimer.formatted}
+					</span>
+					<Counter value={globalTimer.formatted} movement={10} />
+				</div>
+				<div class="flex items-center justify-center rounded-full bg-neutral-800 p-2">
+					{#if globalTimer.isPaused}
+						<Play size={32} onclick={globalTimer.start} />
+					{:else}
+						<Pause size={32} onclick={globalTimer.pause} />
+					{/if}
+				</div>
+			</Dialog.Content>
+		</Dialog.Portal>
+	</Dialog.Root>
 	<!-- <label class="text-white" for="player-select">Players: </label> -->
 	<!-- <select class="rounded bg-neutral-700 p-2 text-white" bind:value={playerCount}> -->
 	<!-- 	<option value={2}>2</option> -->

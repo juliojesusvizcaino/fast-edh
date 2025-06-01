@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	let { value }: { value: string } = $props();
+	let { value, movement = 40 }: { value: string; movement?: number } = $props();
 
 	console.log('counter');
 
@@ -32,8 +32,8 @@
 	<div
 		class="absolute"
 		style={`left: ${i}ch;`}
-		in:fly={{ duration: 200, y: -animationDirection * 40 }}
-		out:fly={{ duration: 200, y: animationDirection * 40 }}
+		in:fly={{ duration: 200, y: -animationDirection * movement }}
+		out:fly={{ duration: 200, y: animationDirection * movement }}
 		aria-hidden="true"
 	>
 		{digit}
