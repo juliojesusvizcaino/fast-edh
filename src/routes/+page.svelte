@@ -63,6 +63,31 @@
 	);
 	let globalTimer = new Timer({ id: 'global', initialTime: 0, step: 1 });
 
+	let wakeLock = null;
+
+	const requestWakeLock = async () => {
+		try {
+			wakeLock = await navigator.wakeLock.request('screen');
+			console.log('Screen Wake Lock is active.');
+
+			// Listen for the release of the wake lock
+			wakeLock.addEventListener('release', () => {
+				console.log('Screen Wake Lock was released.');
+				wakeLock = null;
+			});
+		} catch (err) {
+			console.error(`${err.name}, ${err.message}`);
+		}
+	};
+
+	$effect(() => {
+		if ('wakeLock' in navigator) {
+			requestWakeLock();
+		} else {
+			console.log('Screen Wake Lock API is not supported in this browser.');
+		}
+	});
+
 	function resetGame(completely = false) {
 		for (const player of players) {
 			player.life = 40;

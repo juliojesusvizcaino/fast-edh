@@ -139,7 +139,7 @@
 		</span>
 		{#if lifeChange !== null}
 			<div
-				class="absolute -top-4 left-1/2 -translate-x-1/2 text-sm opacity-50"
+				class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm opacity-50"
 				transition:fly={{ y: 20 }}
 			>
 				{lifeChange.toLocaleString('en', { signDisplay: 'exceptZero' })}
