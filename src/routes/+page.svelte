@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { press } from '$lib/click.svelte';
 	import Counter from '$lib/components/Counter.svelte';
 	import PlayerTile from '$lib/components/PlayerTile.svelte';
 	import { Player, Timer } from '$lib/player.svelte';
@@ -61,18 +62,28 @@
 		)
 	);
 	let globalTimer = new Timer({ id: 'global', initialTime: 0, step: 1 });
+
+	function resetGame(completely = false) {
+		for (const player of players) {
+			player.life = 40;
+			player.timer.reset();
+			if (completely) {
+				player.name = `Player ${player.id + 1}`;
+			}
+		}
+		globalTimer.reset();
+	}
 </script>
 
 <div class="fixed top-1/2 left-1/2 z-10 flex -translate-1/2 flex-col gap-2">
 	<button
 		class="cursor-pointer rounded-full bg-neutral-800 p-2 text-white"
-		onclick={() => {
-			for (const player of players) {
-				player.life = 40;
-				player.timer.reset();
+		{@attach press({
+			click: () => resetGame(),
+			longpress: () => {
+				resetGame(true);
 			}
-      globalTimer.reset();
-		}}
+		})}
 	>
 		<ArrowsCounterClockwise size="32" />
 	</button>
@@ -133,7 +144,7 @@
 				{player}
 				rotation={player.rotation}
 				onLifeChange={(newLife) => {
-          console.log('change')
+					console.log('change');
 					player.life = newLife;
 				}}
 				onTimerClick={() => {

@@ -18,32 +18,49 @@
 	} = $props();
 
 	let currentLife = $derived(player.life);
-	let isEditing = $state(false);
-	let inputValue = $state(player.life);
-	let inputElement: HTMLInputElement | null = $state(null);
+
 	let timeFraction = $derived(
 		Math.min((1 - player.timer.timeSeconds / player.timer.initialTimeSeconds) * 100, 100)
 	);
 
 	let lifeChange = $state<number | null>(null);
 
-	async function startEditing() {
-		isEditing = true;
-		inputValue = player.life;
-		// Wait for the DOM to update, then focus the input
-		await tick();
-		inputElement?.select();
-	}
+	class ValueEditor<T> {
+		input: T;
+		isEditing = $state(false);
+		inputElement: HTMLInputElement | null = $state(null);
+		setter: (value: T) => void;
 
-	function applyEdit() {
-		if (!isEditing) {
-			return;
+		constructor(initialValue: T, setter: (value: T) => void) {
+			this.input = $state(initialValue);
+			this.setter = setter;
 		}
 
-		player.life = inputValue;
-		inputValue = inputValue; // Keep inputValue in sync
-		isEditing = false;
+		startEditing = async (value: T) => {
+			this.isEditing = true;
+			this.input = value;
+			// Wait for the DOM to update, then focus the input
+			await tick();
+			this.inputElement?.select();
+		};
+
+		applyEdit = () => {
+			if (!this.isEditing) {
+				return;
+			}
+
+			this.setter(this.input);
+			this.isEditing = false;
+		};
 	}
+
+	let lifeEditor = new ValueEditor(player.life, (value) => {
+		player.life = value;
+	});
+
+	let nameEditor = new ValueEditor(player.name, (value) => {
+		player.name = value;
+	});
 
 	let timeout: ReturnType<typeof setTimeout> | undefined = $state();
 
@@ -67,9 +84,41 @@
 	class:rotate-180={rotation === 180}
 	class:rotate-270={rotation === 270}
 >
-	<div class="pointer-events-none z-10 p-4 text-2xl font-bold uppercase">
-		{player.name}
-	</div>
+	<button
+		class="relative z-10 flex p-4 text-2xl font-bold uppercase"
+		{@attach press({
+			longpress: () => {
+				if (!nameEditor.isEditing) {
+					nameEditor.startEditing(player.name);
+				}
+			}
+		})}
+	>
+		{#if nameEditor.isEditing}
+			<div class="invisible" aria-hidden="true">
+				{nameEditor.input}
+			</div>
+			<input
+				bind:this={nameEditor.inputElement}
+				type="text"
+				bind:value={nameEditor.input}
+				onblur={() => {
+					nameEditor.applyEdit();
+				}}
+				onkeydown={(event) => {
+					if (event.key === 'Enter') {
+						nameEditor.applyEdit();
+					}
+				}}
+				class="absolute top-1/2 left-1/2 -translate-1/2 h-[1em] uppercase w-full appearance-none border-none bg-transparent p-0 text-center text-2xl font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+				aria-label="Edit life total"
+			/>
+		{:else}
+			<div>
+				{player.name}
+			</div>
+		{/if}
+	</button>
 
 	<span class="sr-only" aria-live="polite" aria-atomic="true">
 		{player.name} life is {player.life}
@@ -79,14 +128,14 @@
 		class="absolute top-1/2 left-1/2 z-10 flex -translate-1/2 items-center font-mono text-[clamp(1rem,8vh,6rem)] font-black"
 		{@attach press({
 			longpress: () => {
-				if (!isEditing) {
-					startEditing();
+				if (!lifeEditor.isEditing) {
+					lifeEditor.startEditing(currentLife);
 				}
 			}
 		})}
 	>
 		<span class="invisible" aria-hidden="true">
-			{(isEditing ? inputValue : currentLife) || 0}
+			{(lifeEditor.isEditing ? lifeEditor.input : currentLife) || 0}
 		</span>
 		{#if lifeChange !== null}
 			<div
@@ -96,19 +145,18 @@
 				{lifeChange.toLocaleString('en', { signDisplay: 'exceptZero' })}
 			</div>
 		{/if}
-		{#if isEditing}
+		{#if lifeEditor.isEditing}
 			<input
-				bind:this={inputElement}
+				bind:this={lifeEditor.inputElement}
 				type="number"
-				bind:value={inputValue}
-				onblur={(e) => {
-					e.stopPropagation();
-					e.preventDefault();
-					applyEdit();
+				bind:value={lifeEditor.input}
+				onblur={() => {
+					lifeEditor.applyEdit();
 				}}
 				onkeydown={(event) => {
+					console.log('keydown', event.key);
 					if (event.key === 'Enter') {
-						applyEdit();
+						lifeEditor.applyEdit();
 					}
 				}}
 				class="absolute h-[1em] w-full appearance-none border-none bg-transparent p-0 text-center text-[clamp(1rem,8vh,6rem)] font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"

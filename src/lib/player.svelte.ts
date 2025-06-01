@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 
 export class Player {
   id: number;
-  name = $state('');
+  #name: LocalStorageStore<string>;
   #life: LocalStorageStore<number>;
   rotation = $state<0 | 90 | 180 | 270>(0);
   gridArea = $state('');
@@ -10,20 +10,18 @@ export class Player {
 
   constructor(params: { id: number, name: string, life: number, rotation: 0 | 90 | 180 | 270, gridArea: string, initialTime: number }) {
     this.id = params.id;
-    this.name = params.name;
+    this.#name = new LocalStorageStore(`name-${params.id}`, params.name);
     this.#life = new LocalStorageStore(`life-${params.id}`, params.life)
     this.rotation = params.rotation;
     this.gridArea = params.gridArea;
     this.timer = new Timer({ id: this.id, initialTime: params.initialTime })
   }
 
-  get life() {
-    return this.#life.value;
-  }
+  get life() { return this.#life.value }
+  set life(value: number) { this.#life.value = value }
 
-  set life(value: number) {
-    this.#life.value = value;
-  }
+  get name() { return this.#name.value }
+  set name(value: string) { this.#name.value = value }
 }
 
 const DEFAULT_TIME_SECONDS = 15 * 60;
