@@ -1,16 +1,28 @@
 import { browser } from '$app/environment';
 
 export class Player {
-  id = 0;
+  id: number;
   name = $state('');
-  life = $state(40);
+  #life: LocalStorageStore<number>;
   rotation = $state<0 | 90 | 180 | 270>(0);
   gridArea = $state('');
   timer: Timer;
 
-  constructor(params: Partial<Omit<Player, 'timer'> & { initialTime: number }> = {}) {
-    Object.assign(this, params);
+  constructor(params: { id: number, name: string, life: number, rotation: 0 | 90 | 180 | 270, gridArea: string, initialTime: number }) {
+    this.id = params.id;
+    this.name = params.name;
+    this.#life = new LocalStorageStore(`life-${params.id}`, params.life)
+    this.rotation = params.rotation;
+    this.gridArea = params.gridArea;
     this.timer = new Timer({ id: this.id, initialTime: params.initialTime })
+  }
+
+  get life() {
+    return this.#life.value;
+  }
+
+  set life(value: number) {
+    this.#life.value = value;
   }
 }
 
