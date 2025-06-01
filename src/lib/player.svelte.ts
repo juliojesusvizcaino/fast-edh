@@ -42,7 +42,7 @@ export class Timer {
 
     // --- State ---
     // Create reactive state using runes at the top level of the function.
-    this.#timeSeconds = new LocalStorageStore(`countdown-${params.id}`, this.#initialTime);
+    this.#timeSeconds = new LocalStorageStore(`timer-${params.id}`, this.#initialTime);
     this.#isPaused = $state(true);
     this.#interval = $state<ReturnType<typeof setInterval> | undefined>();
   }
@@ -62,7 +62,7 @@ export class Timer {
 
     this.#isPaused = false;
     this.#interval = setInterval(() => {
-        this.#timeSeconds.value = this.#timeSeconds.value + this.#step;
+      this.#timeSeconds.value = this.#timeSeconds.value + this.#step;
     }, 1000);
   };
 
@@ -74,9 +74,19 @@ export class Timer {
   get timeSeconds() { return this.#timeSeconds.value; }
   get isPaused() { return this.#isPaused; }
   get formatted() {
-    const minutes = Math.floor(this.timeSeconds / 60);
-    const secs = this.timeSeconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const isNegative = this.timeSeconds < 0;
+    const absSeconds = Math.abs(this.timeSeconds);
+
+    const minutes = Math.floor(absSeconds / 60);
+    const secs = absSeconds % 60;
+
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSecs = String(secs).padStart(2, '0');
+
+    return `${isNegative ? '-' : ''}${formattedMinutes}:${formattedSecs}`;
+  }
+  get initialTimeSeconds() {
+    return this.#initialTime;
   }
 }
 
@@ -121,22 +131,22 @@ export class LocalStorageStore<T> {
         localStorage.setItem(key, JSON.stringify(this.value));
 
         // Listen for changes from other tabs.
-        const handleStorage = (event: StorageEvent) => {
-          if (event.key === key && event.newValue) {
-            try {
-              this.value = JSON.parse(event.newValue);
-            } catch {
-              /* ignore */
-            }
-          }
-        };
+        // const handleStorage = (event: StorageEvent) => {
+        //   if (event.key === key && event.newValue) {
+        //     try {
+        //       this.value = JSON.parse(event.newValue);
+        //     } catch {
+        //       /* ignore */
+        //     }
+        //   }
+        // };
 
-        window.addEventListener('storage', handleStorage);
+        // window.addEventListener('storage', handleStorage);
 
         // The effect's cleanup function: remove the event listener.
         // This runs when the component is unmounted.
         return () => {
-          window.removeEventListener('storage', handleStorage);
+          // window.removeEventListener('storage', handleStorage);
         };
       }
     });
