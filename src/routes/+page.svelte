@@ -63,31 +63,6 @@
 	);
 	let globalTimer = new Timer({ id: 'global', initialTime: 0, step: 1 });
 
-	let wakeLock = null;
-
-	const requestWakeLock = async () => {
-		try {
-			wakeLock = await navigator.wakeLock.request('screen');
-			console.log('Screen Wake Lock is active.');
-
-			// Listen for the release of the wake lock
-			wakeLock.addEventListener('release', () => {
-				console.log('Screen Wake Lock was released.');
-				wakeLock = null;
-			});
-		} catch (err) {
-			console.error(`${err.name}, ${err.message}`);
-		}
-	};
-
-	$effect(() => {
-		if ('wakeLock' in navigator) {
-			requestWakeLock();
-		} else {
-			console.log('Screen Wake Lock API is not supported in this browser.');
-		}
-	});
-
 	function resetGame(completely = false) {
 		for (const player of players) {
 			player.life = 40;
@@ -98,7 +73,34 @@
 		}
 		globalTimer.reset();
 	}
+  import { browser } from '$app/environment';
+
+  let wakeLock: WakeLockSentinel | null = null;
+  let isLocked = $state(false);
+
+  async function requestWakeLock() {
+    if (browser && 'wakeLock' in navigator) {
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        isLocked = !wakeLock.released;
+
+        wakeLock.addEventListener('release', () => {
+          isLocked = false;
+        });
+      } catch (err) {
+        console.error(`${(err as Error).name}, ${(err as Error).message}`);
+      }
+    }
+  }
+
+  async function handleVisibilityChange() {
+    if (browser && document.visibilityState === 'visible' && isLocked) {
+      await requestWakeLock();
+    }
+  }
 </script>
+
+<svelte:document onvisibilitychange={handleVisibilityChange} onfullscreenchange={handleVisibilityChange} />
 
 <div class="fixed top-1/2 left-1/2 z-10 flex -translate-1/2 flex-col gap-2">
 	<button
