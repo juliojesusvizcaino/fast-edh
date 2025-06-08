@@ -110,7 +110,7 @@
 						nameEditor.applyEdit();
 					}
 				}}
-				class="absolute top-1/2 left-1/2 -translate-1/2 h-[1em] uppercase w-full appearance-none border-none bg-transparent p-0 text-center text-2xl font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+				class="absolute top-1/2 left-1/2 h-[1em] w-full -translate-1/2 appearance-none border-none bg-transparent p-0 text-center text-2xl font-semibold text-white uppercase [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 				aria-label="Edit life total"
 			/>
 		{:else}

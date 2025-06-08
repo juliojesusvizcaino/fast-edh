@@ -11,7 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"generate-types": "supabase gen types typescript --project-id \"dtispnwtizynymgnneda\" --schema public > src/lib/database.types.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.9",
@@ -30,6 +31,7 @@
 		"prettier": "^3.5.3",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.6.12",
+		"supabase": "^2.24.3",
 		"svelte": "^5.33.10",
 		"svelte-check": "^4.2.1",
 		"tailwindcss": "^4.1.8",
@@ -39,7 +41,8 @@
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
-			"esbuild"
+			"esbuild",
+			"supabase"
 		]
 	},
 	"dependencies": {
