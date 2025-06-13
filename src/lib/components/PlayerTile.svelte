@@ -79,135 +79,152 @@
 </script>
 
 <div
-	class="relative flex h-full w-full flex-col items-center justify-around p-4 text-white transition-transform duration-300"
-	class:rotate-90={rotation === 90}
+	class="relative flex h-full w-full items-center justify-around p-4 text-white transition-transform duration-300"
+	class:flex-col={rotation === 0 || rotation === 180}
+	class:flex-row-reverse={rotation === 90}
 	class:rotate-180={rotation === 180}
-	class:rotate-270={rotation === 270}
 >
-	<button
-		class="relative z-10 flex p-4 text-2xl font-bold uppercase"
-		{@attach press({
-			longpress: () => {
-				if (!nameEditor.isEditing) {
-					nameEditor.startEditing(player.name);
-				}
-			}
-		})}
+	<div
+		class="flex size-full items-center justify-around gap-2"
+		class:flex-col={rotation === 0 || rotation === 180}
+		class:flex-row-reverse={rotation === 90}
 	>
-		{#if nameEditor.isEditing}
-			<div class="invisible" aria-hidden="true">
-				{nameEditor.input}
-			</div>
-			<input
-				bind:this={nameEditor.inputElement}
-				type="text"
-				bind:value={nameEditor.input}
-				onblur={() => {
-					nameEditor.applyEdit();
-				}}
-				onkeydown={(event) => {
-					if (event.key === 'Enter') {
+		<button
+			class="relative z-10 flex p-4 text-2xl font-bold uppercase"
+			class:rotate-90={rotation === 90}
+			{@attach press({
+				longpress: () => {
+					if (!nameEditor.isEditing) {
+						nameEditor.startEditing(player.name);
+					}
+				}
+			})}
+		>
+			{#if nameEditor.isEditing}
+				<div class="invisible" aria-hidden="true">
+					{nameEditor.input}
+				</div>
+				<input
+					bind:this={nameEditor.inputElement}
+					type="text"
+					bind:value={nameEditor.input}
+					onblur={() => {
 						nameEditor.applyEdit();
-					}
-				}}
-				class="absolute top-1/2 left-1/2 -translate-1/2 h-[1em] uppercase w-full appearance-none border-none bg-transparent p-0 text-center text-2xl font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-				aria-label="Edit life total"
-			/>
-		{:else}
-			<div>
-				{player.name}
-			</div>
-		{/if}
-	</button>
+					}}
+					onkeydown={(event) => {
+						if (event.key === 'Enter') {
+							nameEditor.applyEdit();
+						}
+					}}
+					class="absolute top-1/2 left-1/2 h-[1em] w-full -translate-1/2 appearance-none border-none bg-transparent p-0 text-center text-2xl font-semibold text-white uppercase [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+					aria-label="Edit life total"
+				/>
+			{:else}
+				<div>
+					{player.name}
+				</div>
+			{/if}
+		</button>
 
-	<span class="sr-only" aria-live="polite" aria-atomic="true">
-		{player.name} life is {player.life}
-	</span>
-
-	<button
-		class="absolute top-1/2 left-1/2 z-10 flex -translate-1/2 items-center font-mono text-[clamp(1rem,8vh,6rem)] font-black"
-		{@attach press({
-			longpress: () => {
-				if (!lifeEditor.isEditing) {
-					lifeEditor.startEditing(currentLife);
-				}
-			}
-		})}
-	>
-		<span class="invisible" aria-hidden="true">
-			{(lifeEditor.isEditing ? lifeEditor.input : currentLife) || 0}
+		<span class="sr-only" aria-live="polite" aria-atomic="true">
+			{player.name} life is {player.life}
 		</span>
-		{#if lifeChange !== null}
-			<div
-				class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm opacity-50"
-				transition:fly={{ y: 20 }}
-			>
-				{lifeChange.toLocaleString('en', { signDisplay: 'exceptZero' })}
-			</div>
-		{/if}
-		{#if lifeEditor.isEditing}
-			<input
-				bind:this={lifeEditor.inputElement}
-				type="number"
-				bind:value={lifeEditor.input}
-				onblur={() => {
-					lifeEditor.applyEdit();
-				}}
-				onkeydown={(event) => {
-					console.log('keydown', event.key);
-					if (event.key === 'Enter') {
-						lifeEditor.applyEdit();
-					}
-				}}
-				class="absolute h-[1em] w-full appearance-none border-none bg-transparent p-0 text-center text-[clamp(1rem,8vh,6rem)] font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-				aria-label="Edit life total"
-			/>
-		{:else}
-			<Counter value={currentLife.toString()} />
-		{/if}
-	</button>
 
-	<button
-		onclick={onTimerClick}
-		class={[
-			'z-10 mt-auto cursor-pointer overflow-hidden rounded-lg p-4 font-mono',
-			player.timer.isPaused ? 'bg-neutral-800' : 'bg-neutral-600'
-		]}
-	>
-		<div class="relative flex">
+		<button
+			class="absolute top-1/2 left-1/2 z-10 flex -translate-1/2 items-center font-mono text-[clamp(1rem,8vh,6rem)] font-black"
+			class:rotate-90={rotation === 90}
+			{@attach press({
+				longpress: () => {
+					if (!lifeEditor.isEditing) {
+						lifeEditor.startEditing(currentLife);
+					}
+				}
+			})}
+		>
 			<span class="invisible" aria-hidden="true">
-				{player.timer.formatted}
+				{(lifeEditor.isEditing ? lifeEditor.input : currentLife) || 0}
 			</span>
-			<Counter value={player.timer.formatted} movement={10} />
-		</div>
-	</button>
+			{#if lifeChange !== null}
+				<div
+					class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm opacity-50"
+					transition:fly={{ y: 20 }}
+				>
+					{lifeChange.toLocaleString('en', { signDisplay: 'exceptZero' })}
+				</div>
+			{/if}
+			{#if lifeEditor.isEditing}
+				<input
+					bind:this={lifeEditor.inputElement}
+					type="number"
+					bind:value={lifeEditor.input}
+					onblur={() => {
+						lifeEditor.applyEdit();
+					}}
+					onkeydown={(event) => {
+						console.log('keydown', event.key);
+						if (event.key === 'Enter') {
+							lifeEditor.applyEdit();
+						}
+					}}
+					class="absolute h-[1em] w-full appearance-none border-none bg-transparent p-0 text-center text-[clamp(1rem,8vh,6rem)] font-semibold text-white [-moz-appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+					aria-label="Edit life total"
+				/>
+			{:else}
+				<Counter value={currentLife.toString()} />
+			{/if}
+		</button>
+
+		<button
+			onclick={onTimerClick}
+			class={[
+				'z-10 cursor-pointer overflow-hidden rounded-lg p-4 font-mono',
+				player.timer.isPaused ? 'bg-neutral-800' : 'bg-neutral-600'
+			]}
+			class:rotate-90={rotation === 90}
+		>
+			<div class="relative flex">
+				<span class="invisible" aria-hidden="true">
+					{player.timer.formatted}
+				</span>
+				<Counter value={player.timer.formatted} movement={10} />
+			</div>
+		</button>
+	</div>
 
 	<div
 		class="pointer-events-none absolute bottom-0 left-0 w-full opacity-50 transition-all duration-500 ease-in-out"
-		style:height={`${timeFraction}%`}
+		style:height={[0, 180].includes(rotation) ? `${timeFraction}%` : '100%'}
+		style:width={[90, 270].includes(rotation) ? `${timeFraction}%` : '100%'}
 		style:background-color={`color-mix(in oklch, var(--color-neutral-700) ${100 - timeFraction}%, var(--color-amber-700) ${timeFraction}%)`}
 	></div>
 
-	<div class="absolute inset-0 flex">
+	<div
+		class="absolute inset-0 grid overflow-hidden rounded-3xl"
+		class:grid-cols-2={rotation === 0 || rotation === 180}
+		class:grid-rows-2={rotation === 90}
+	>
 		<button
-			class="flex h-full w-1/2 items-center justify-center rounded-l-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-red-500/5"
+			class="flex size-full items-center justify-center text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-red-500/5"
 			aria-label="Decrease life for {player.name}"
 			{@attach press({
 				click: () => handleLifeChange(-1),
 				longpress: () => handleLifeChange(-10)
 			})}
 		>
-			-
+			<div class:rotate-90={rotation === 90}>-</div>
 		</button>
 		<button
-			class="flex h-full w-1/2 items-center justify-center rounded-r-3xl text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-green-500/5"
+			class="flex size-full items-center justify-center text-4xl font-black text-white/10 transition-colors duration-200 select-none active:bg-green-500/5"
 			aria-label="Increase life for {player.name}"
+			class:rotate-90={rotation === 90}
 			{@attach press({
 				click: () => handleLifeChange(1),
 				longpress: () => handleLifeChange(10)
 			})}
 		>
+			<div class:rotate-90={rotation === 90}>
 			+
+      </div>
 		</button>
 	</div>
 </div>
