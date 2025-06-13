@@ -4,7 +4,7 @@
 	import PlayerTile from '$lib/components/PlayerTile.svelte';
 	import { Player, Timer } from '$lib/player.svelte';
 	import { Dialog } from 'bits-ui';
-	import { ArrowsCounterClockwise, Pause, Play } from 'phosphor-svelte';
+	import { ArrowsCounterClockwise, Pause, Play, ShareFat, ShareNetwork } from 'phosphor-svelte';
 
 	const layouts = {
 		2: {
@@ -134,6 +134,51 @@
 			class="cursor-pointer items-center justify-center rounded-full bg-neutral-800 p-2 text-white"
 		>
 			<Pause size={32} />
+		</Dialog.Trigger>
+		<Dialog.Portal>
+			<Dialog.Overlay
+				class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50"
+			/>
+			<Dialog.Content
+				class="shadow-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 flex translate-x-[-50%] translate-y-[-50%] flex-col gap-2 rounded-2xl bg-neutral-700 px-16 py-8 text-white outline-hidden"
+			>
+				<div class="relative flex flex-col items-center justify-center font-mono">
+					<span class="invisible" aria-hidden="true">
+						{globalTimer.formatted}
+					</span>
+					<Counter value={globalTimer.formatted} movement={10} />
+				</div>
+				<div class="flex items-center justify-center rounded-full bg-neutral-800 p-2">
+					{#if globalTimer.isPaused}
+						<Play size={32} onclick={globalTimer.start} />
+					{:else}
+						<Pause size={32} onclick={globalTimer.pause} />
+					{/if}
+				</div>
+			</Dialog.Content>
+		</Dialog.Portal>
+	</Dialog.Root>
+	<Dialog.Root
+		onOpenChange={(open) => {
+			if (open) {
+				for (const player of players) {
+					player.timer.pause();
+				}
+				globalTimer.start();
+			} else {
+				globalTimer.pause();
+			}
+		}}
+	>
+		<Dialog.Trigger
+			class="cursor-pointer items-center justify-center rounded-full bg-neutral-800 p-2 text-white"
+			{@attach press({
+				longpress: () => {
+					console.log('hello');
+				}
+			})}
+		>
+			<ShareNetwork size={32} />
 		</Dialog.Trigger>
 		<Dialog.Portal>
 			<Dialog.Overlay
